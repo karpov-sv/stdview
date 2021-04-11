@@ -1,0 +1,27 @@
+{% extends "template.html" %}
+
+{% block title %}{% endblock %}
+
+{% block content %}
+
+  {% if breadcrumb %}
+    <!-- Display breadcrumb with clickable path elements -->
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        {% for bread in breadcrumb %}
+          <li class="breadcrumb-item">
+            {% if bread.path %}
+              <a href="{{ url_for('view', path=bread.path) }}">{{ bread.name }}</a>
+            {% else %}
+              {{ bread.name }}
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ol>
+    </nav>
+  {% endif %}
+
+  {% block files_content %}
+  {% endblock %}
+
+{% endblock %}

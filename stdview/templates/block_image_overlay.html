@@ -1,0 +1,23 @@
+<div class="stdview-image-overlay">
+
+  <div class="stdview-image-overlay-menu">
+
+    <select onchange="if (this.value) update_get_params('{{ id }}', {stretch:this.value})">
+      <option value="" disabled selected>Stretch</option>
+      <option>linear</option>
+      <option>asinh</option>
+      <option>log</option>
+    </select>
+
+    <select onchange="if (this.value) update_get_params('{{ id }}', {qmax:this.value})">
+      <option value="" disabled selected>Scale</option>
+      <option value=90>90%</option>
+      <option value=95>95%</option>
+      <option value=99>99%</option>
+      <option value=99.5>99.5%</option>
+      <option value=100>100%</option>
+    </select>
+
+  </div>
+
+</div>

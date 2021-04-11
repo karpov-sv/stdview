@@ -1,0 +1,55 @@
+{% if cutout is none %}
+
+  <div class="text-center">
+    <img src="{{ url_for('cutout', path=path) }}" class="img-fluid" alt="{{ path }}"/>
+  </div>
+
+{% else %}
+
+  <ul>
+    <li>Name: <b>{{ cutout.meta.name }}</b></li>
+    <li>Time: <b>{{ cutout.meta.time.iso }}</b></li>
+    <li>Mag: <b>{{ "%.2f" % cutout.meta.mag_calib }}</b> +/- <b>{{  "%.2f" % cutout.meta.magerr }}</b></li>
+    <li>RA/Dec: <b>{{ "%.4f" % cutout.meta.ra }}</b> <b>{{ "%+.4f" % cutout.meta.dec }}</b></li>
+    <li>CLASS_STAR: <b>{{ "%.2f" % cutout.meta.class_star }}</b></li>
+    <li>FWHM: <b>{{ "%.2f" % cutout.meta.fwhm }}</b></li>
+    <li>Filename: <b>{{ cutout.meta.filename }}</b></li>
+  </ul>
+
+  <div class="row">
+  {% for hdu in fitsfile %}
+    {% if hdu.data is not none %}
+      <div class="col-2 pr-1 pl-0 pt-0 pb-0">
+        <div class="card">
+          <h6 class="card-header text-center pr-1 pl-1 pt-1 pb-1">
+            {{ hdu.name }}
+          </h6>
+
+          <!-- <div class="card-body text-center pr-0 pl-0 pt-0 pb-0"> -->
+          <div class="stdview-image-container">
+            <img id="cutout_img_{{ loop.index0 }}"
+                 src="{{ url_for('preview', path=path, ext=loop.index0) }}{% if hdu.name in ['IMAGE', 'TEMPLATE', 'CONVOLVED'] %}?stretch=asinh{% endif %}"
+                 class="card-img img-fluid pr-0 pl-0 pt-0 pb-0"
+                 alt="{{ hdu.name }}"/>
+            {% with id='#cutout_img_%d' % loop.index0 %}
+              {% include "block_image_overlay.html" %}
+            {% endwith %}
+          </div>
+            <!--
+          <div class="card-body text-center pt-0 pb-0 small">
+            <a href="#" onclick="update_get_params('#cutout_img_{{ loop.index0 }}', {stretch:'linear'}); return false">linear</a>
+            <a href="#" onclick="update_get_params('#cutout_img_{{ loop.index0 }}', {stretch:'asinh'}); return false">asinh</a>
+            <a href="#" onclick="update_get_params('#cutout_img_{{ loop.index0 }}', {stretch:'log'}); return false">log</a>
+            <br>
+            <a href="#" onclick="update_get_params('#cutout_img_{{ loop.index0 }}', {qmax:95}); return false">95%</a>
+            <a href="#" onclick="update_get_params('#cutout_img_{{ loop.index0 }}', {qmax:99}); return false">99%</a>
+            <a href="#" onclick="update_get_params('#cutout_img_{{ loop.index0 }}', {qmax:100}); return false">100%</a>
+          </div>
+           -->
+        </div>
+      </div>
+    {% endif %}
+  {% endfor %}
+  </div>
+
+{% endif %}

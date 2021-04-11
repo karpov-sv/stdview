@@ -1,0 +1,77 @@
+{% extends "files.html" %}
+
+{% block head %}
+
+{% endblock %}
+
+{% block files_content %}
+  <!-- Display file info or contents -->
+
+  <ul>
+    <li>Path: <b><a href="{{ url_for('download', path=path, attachment=False) }}">{{ path }}</a></b></li>
+    <li>Size: <b>{{ stat.st_size }}</b></li>
+    <li>Last modified: <b>{{ time.iso }}</b></li>
+    <li><b>{{ mime }}</b> : {{ magic }}</li>
+  </ul>
+
+  {% if mode == 'text' %}
+    <!-- Display text file contents -->
+
+    <div class="card">
+      <div class="card-body">
+        <pre><code>{{ contents }}</code></pre>
+      </div>
+    </div>
+
+  {% elif mode == 'image' %}
+    <!-- Display image inline -->
+
+    <img src="{{ url_for('download', path=path) }}" class="img-fluid img-thumbnail" alt="{{ path }}"/>
+
+  {% elif mode == 'fits' %}
+    <!-- Display FITS file -->
+
+    {% for hdu in fitsfile %}
+      <div>
+        <!-- Full FITS header -->
+        <div class="card">
+          <h5 class="card-header" data-toggle="collapse" data-target="#collapseHeader{{ loop.index0 }}"
+              aria-expanded="false"
+              aria-controls="collapseHeader{{ loop.index0 }}">
+            {{ hdu.name }}
+            <span class="float-right"><small><a href="#">Toggle header</a></small></span>
+          </h5>
+
+          <div class="collapse {% if hdu.data is none %}show{% endif %}" id="collapseHeader{{ loop.index0 }}">
+            <div class="card-body">
+              <pre>{{ hdu.header.tostring('\n') }}</pre>
+            </div>
+          </div>
+        </div>
+
+          {% if hdu.data is not none %}
+            <div class="text-center">
+              <div class="stdview-image-container">
+                <img id="hdu_img_{{ loop.index0 }}" src="{{ url_for('preview', path=path, ext=loop.index0) }}" class="img-fluid" alt="{{ path }}"/>
+                {% with id='#hdu_img_%d' % loop.index0 %}
+                  {% include "block_image_overlay.html" %}
+                {% endwith %}
+              </div>
+            </div>
+          {% endif %}
+
+
+      </div>
+    {% endfor %}
+
+  {% elif mode == 'cutout' %}
+
+    {% include 'block_cutout.html' %}
+
+  {% else %}
+    <p>
+      Cannot preview file
+    </p>
+  {% endif %}
+
+{% endblock %}
