@@ -167,13 +167,9 @@ def preview(path, ext=0, width=None, minwidth=256, maxwidth=1024):
         elif figsize[0] > maxwidth:
             width = maxwidth
 
-    print(width, figsize)
-
     if width is not None and figsize[0] != width:
         figsize[1] = width*figsize[1]/figsize[0]
         figsize[0] = width
-
-    print(' ->', width, figsize)
 
     fig = Figure(facecolor='red', dpi=72, figsize=(figsize[0]/72, figsize[1]/72))
     ax = Axes(fig, [0., 0., 1., 1.])
