@@ -4,7 +4,7 @@
 
 .stdview-image-overlay {
     position: absolute;
-    display: block;
+    display: inline-block;
     top: 0;
     bottom: 0;
     left: 0;
@@ -27,4 +27,22 @@
     margin: 0.5em;
     padding: 0.2em;
     border-radius: 0.3em;
+}
+
+.stdview-image-loading {
+  position: relative;
+  /* display: inline-block; */
+}
+
+.stdview-image-loading::after {
+  content: "Loading...";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 1.0;
+  display: block;
+  background: white;
+  padding: 1em;
+  border: 1px dotted red;
 }

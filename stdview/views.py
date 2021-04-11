@@ -146,25 +146,36 @@ def download(path, attachment=True):
 
 @app.route('/preview/<path:path>', defaults={'ext':0})
 @app.route('/preview/<path:path>/<int:ext>')
-def preview(path, ext=0, width=None, minwidth=256):
+def preview(path, ext=0, width=None, minwidth=256, maxwidth=1024):
     """
     Preview FITS image as PNG
     """
     base = stdconf.get('basepath', '.')
     fullpath = os.path.join(base, path)
 
+    # Optional parameters
+    fmt = request.args.get('format', 'jpeg')
+    quality = float(request.args.get('quality', 80))
+
     data = fits.getdata(fullpath, ext)
 
     figsize = [data.shape[1], data.shape[0]]
 
-    if width is None and figsize[0] < minwidth:
-        width = minwidth
+    if width is None:
+        if figsize[0] < minwidth:
+            width = minwidth
+        elif figsize[0] > maxwidth:
+            width = maxwidth
 
-    if width is not None:
+    print(width, figsize)
+
+    if width is not None and figsize[0] != width:
         figsize[1] = width*figsize[1]/figsize[0]
         figsize[0] = width
 
-    fig = Figure(facecolor='red', dpi=72, figsize=(figsize[0]/72, figsize[1]/72), tight_layout=True)
+    print(' ->', width, figsize)
+
+    fig = Figure(facecolor='red', dpi=72, figsize=(figsize[0]/72, figsize[1]/72))
     ax = Axes(fig, [0., 0., 1., 1.])
     # ax.set_axis_off()
     fig.add_axes(ax)
@@ -174,9 +185,9 @@ def preview(path, ext=0, width=None, minwidth=256):
                  qq=[float(request.args.get('qmin', 0.5)), float(request.args.get('qmax', 99.5))])
 
     buf = io.BytesIO()
-    fig.savefig(buf, format="png")
+    fig.savefig(buf, format=fmt, quality=quality)
 
-    return Response(buf.getvalue(), mimetype='image/png')
+    return Response(buf.getvalue(), mimetype='image/%s' % fmt)
 
 @app.route('/cutout/<path:path>')
 def cutout(path, width=None):

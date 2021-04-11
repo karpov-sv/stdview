@@ -1,9 +1,5 @@
 {% extends "files.html" %}
 
-{% block head %}
-
-{% endblock %}
-
 {% block files_content %}
   <!-- Display file info or contents -->
 
@@ -52,7 +48,7 @@
           {% if hdu.data is not none %}
             <div class="text-center">
               <div class="stdview-image-container">
-                <img id="hdu_img_{{ loop.index0 }}" src="{{ url_for('preview', path=path, ext=loop.index0) }}" class="img-fluid" alt="{{ path }}"/>
+                <img id="hdu_img_{{ loop.index0 }}" src="{{ url_for('preview', path=path, ext=loop.index0) }}" class="img-fluid img-thumbnail" alt="{{ path }}"/>
                 {% with id='#hdu_img_%d' % loop.index0 %}
                   {% include "block_image_overlay.html" %}
                 {% endwith %}
