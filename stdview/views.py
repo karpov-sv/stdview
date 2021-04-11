@@ -155,7 +155,7 @@ def preview(path, ext=0, width=None, minwidth=256, maxwidth=1024):
 
     # Optional parameters
     fmt = request.args.get('format', 'jpeg')
-    quality = float(request.args.get('quality', 80))
+    quality = int(request.args.get('quality', 80))
 
     data = fits.getdata(fullpath, ext)
 
@@ -171,7 +171,7 @@ def preview(path, ext=0, width=None, minwidth=256, maxwidth=1024):
         figsize[1] = width*figsize[1]/figsize[0]
         figsize[0] = width
 
-    fig = Figure(facecolor='red', dpi=72, figsize=(figsize[0]/72, figsize[1]/72))
+    fig = Figure(facecolor='white', dpi=72, figsize=(figsize[0]/72, figsize[1]/72))
     ax = Axes(fig, [0., 0., 1., 1.])
     # ax.set_axis_off()
     fig.add_axes(ax)
