@@ -65,7 +65,7 @@ def view(path=''):
                 stat = entry.stat()
 
                 elem = {
-                    'path': entry.path,
+                    'path': os.path.join(path, entry.name),
                     'name': entry.name,
                     'stat': stat,
                     'size': stat.st_size,
@@ -88,10 +88,15 @@ def view(path=''):
                     elem['type'] = 'file'
 
                 if elem['type'] == 'fits':
-                    hdus = fits.open(entry.path)
-                    if hdus[0].data is None and hdus[1].name == 'IMAGE' and hdus[2].name == 'TEMPLATE':
-                        elem['type'] = 'cutout'
-                    hdus.close()
+                    try:
+                        hdus = fits.open(entry.path)
+                        if hdus[0].data is None and hdus[1].name == 'IMAGE' and hdus[2].name == 'TEMPLATE':
+                            elem['type'] = 'cutout'
+                        elif hdus[0].data is not None:
+                            elem['preview'] = True
+                        hdus.close()
+                    except:
+                        pass
 
                 files.append(elem)
 
@@ -121,12 +126,15 @@ def view(path=''):
         elif 'fits' in context['mime'] or os.path.splitext(path)[1].lower().startswith('.fit'):
             context['mode'] = 'fits'
 
-            hdus = fits.open(fullpath) # FIXME: will it be closed?..
-            context['fitsfile'] = hdus
+            try:
+                hdus = fits.open(fullpath) # FIXME: will it be closed?..
+                context['fitsfile'] = hdus
 
-            if hdus[0].data is None and hdus[1].name == 'IMAGE' and hdus[2].name == 'TEMPLATE':
-                context['mode'] = 'cutout'
-                context['cutout'] = cutouts.load_cutout(fullpath)
+                if hdus[0].data is None and hdus[1].name == 'IMAGE' and hdus[2].name == 'TEMPLATE':
+                    context['mode'] = 'cutout'
+                    context['cutout'] = cutouts.load_cutout(fullpath)
+            except:
+                pass
 
         elif 'image' in context['mime']:
             context['mode'] = 'image'
@@ -156,6 +164,10 @@ def preview(path, ext=0, width=None, minwidth=256, maxwidth=1024):
     # Optional parameters
     fmt = request.args.get('format', 'jpeg')
     quality = int(request.args.get('quality', 80))
+
+    width = request.args.get('width', width)
+    if width is not None:
+        width = int(width)
 
     data = fits.getdata(fullpath, ext)
 
