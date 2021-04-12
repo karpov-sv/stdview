@@ -131,9 +131,16 @@ def view(path=''):
                 context['fitsfile'] = hdus
 
                 if hdus[0].data is None and hdus[1].name == 'IMAGE' and hdus[2].name == 'TEMPLATE':
-                    context['mode'] = 'cutout'
+                    # Probably FITS with STDPipe cutout, let's try to load it
                     context['cutout'] = cutouts.load_cutout(fullpath)
+                    context['mode'] = 'cutout'
+
+                    if context['cutout'] and 'filename' in context['cutout']['meta']:
+                        context['cutout_filename'] = os.path.split(context['cutout']['meta']['filename'])[1]
+
             except:
+                import traceback
+                traceback.print_exc()
                 pass
 
         elif 'image' in context['mime']:
