@@ -4,8 +4,8 @@
   <!-- Display file info or contents -->
 
   <ul>
-    <li>Path: <b><a href="{{ url_for('download', path=path, attachment=False) }}">{{ path }}</a></b></li>
-    <li>Size: <b>{{ stat.st_size }}</b></li>
+    <li>Path: <b><a href="{{ url_for('download', path=path, attachment=False) }}"><i class="fa fa-download"></i> {{ path }}</a></b></li>
+    <li>Size: <b>{{ stat.st_size }}</b> bytes</li>
     <li>Last modified: <b>{{ time.iso }}</b></li>
     <li><b>{{ mime }}</b> : {{ magic }}</li>
   </ul>
@@ -14,7 +14,7 @@
     <!-- Display text file contents -->
 
     <div class="card">
-      <div class="card-body">
+      <div class="card-body pr-2 pl-2 pt-2 pb-2">
         <pre><code>{{ contents }}</code></pre>
       </div>
     </div>
@@ -49,7 +49,7 @@
             <div class="text-center">
               <div class="stdview-image-container">
                 <img id="hdu_img_{{ loop.index0 }}" src="{{ url_for('preview', path=path, ext=loop.index0) }}" class="img-fluid img-thumbnail" alt="{{ path }}"/>
-                {% with id='#hdu_img_%d' % loop.index0 %}
+                {% with id='#hdu_img_%d' % loop.index0, ra=none, dec=none %}
                   {% include "block_image_overlay.html" %}
                 {% endwith %}
               </div>

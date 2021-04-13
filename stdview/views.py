@@ -8,10 +8,12 @@ import magic
 
 from astropy.time import Time
 from astropy.io import fits
+from astropy.wcs import WCS
 
 # from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib.axes import Axes
+from matplotlib.patches import Circle
 
 from skimage.transform import rescale
 from stdpipe import cutouts, plots
@@ -198,6 +200,13 @@ def preview(path, ext=0, width=None, minwidth=256, maxwidth=1024):
                  cmap=request.args.get('cmap', 'Blues_r'),
                  stretch=request.args.get('stretch', 'linear'),
                  qq=[float(request.args.get('qmin', 0.5)), float(request.args.get('qmax', 99.5))])
+
+    if request.args.get('ra', None) is not None and request.args.get('dec', None) is not None:
+        # Show the position of the object
+        header = fits.getheader(fullpath, ext)
+        wcs = WCS(header)
+        x,y = wcs.all_world2pix(float(request.args.get('ra')), float(request.args.get('dec')), 0)
+        ax.add_artist(Circle((x, y), 5.0, edgecolor='red', facecolor='none', ls='-', lw=2))
 
     buf = io.BytesIO()
     fig.savefig(buf, format=fmt, quality=quality)

@@ -8,8 +8,12 @@ update_get_params = function(id, params) {
     }).attr('src', function(i, src) {
         var url = new URL(src, window.location);
 
-        for (name in params)
-            url.searchParams.set(name, params[name]);
+        for (name in params) {
+            if (params[name] === null)
+                url.searchParams.delete(name);
+            else
+                url.searchParams.set(name, params[name]);
+        }
 
         return url.href;
     });

@@ -19,6 +19,10 @@
       <option value=100>100%</option>
     </select>
 
+    {% if ra and dec %}
+      <input type="checkbox" onclick="if(this.checked) update_get_params('{{ id }}', {ra:{{ ra }},dec:{{ dec }}}); else update_get_params('{{ id }}', {ra:null,dec:null});"/>
+    {% endif %}
+
   </div>
 
 </div>

@@ -16,7 +16,7 @@
     <li>FWHM: <b>{{ "%.2f" % cutout.meta.fwhm }}</b></li>
     <li>Original Image: <b>
       {% if cutout_filename %}
-        <a href="https://pc048b.fzu.cz/archive/images?filename={{ cutout_filename }}" target="_blank">
+        <a href="https://pc048b.fzu.cz/archive/images?filename={{ cutout_filename }}" title="Look up original image in FRAM archive" target="_blank"><i class="fa fa-search"></i>
       {% endif %}
       {{ cutout.meta.filename }}
       {% if cutout_filename %}
@@ -40,7 +40,7 @@
                  src="{{ url_for('preview', path=path, ext=loop.index0) }}{% if hdu.name in ['IMAGE', 'TEMPLATE', 'CONVOLVED'] and false %}?stretch=asinh{% endif %}"
                  class="card-img img-fluid pr-0 pl-0 pt-0 pb-0"
                  alt="{{ hdu.name }}"/>
-            {% with id='#cutout_img_%d' % loop.index0 %}
+            {% with id='#cutout_img_%d' % loop.index0, ra=cutout.meta.ra, dec=cutout.meta.dec %}
               {% include "block_image_overlay.html" %}
             {% endwith %}
           </div>
@@ -77,11 +77,15 @@
         </li>
 
         <li class="list-inline-item">
-          <a href="https://irsa.ipac.caltech.edu/cgi-bin/Gator/nph-query?objstr={{ ra }}+{{ dec }}+&catalog=ztf_objects_dr5&mission=irsa" target="_blank">ZTF</a>
+          <a href="https://irsa.ipac.caltech.edu/cgi-bin/Gator/nph-query?objstr={{ ra }}+{{ dec }}+&catalog=ztf_objects_dr5&mission=irsa" title="ZTF DR5" target="_blank">ZTF</a>
         </li>
 
         <li class="list-inline-item">
-          <a href="https://pc048b.fzu.cz/archive/images/cutouts?&site=cta-n&ccd=C0&ra={{ ra }}&dec={{ dec }}&sr=0.03" target="_blank">Cutouts:CTA-N</a>
+          <a href="https://www.wis-tns.org/search?ra={{ ra }}&decl={{ dec }}&radius=10&coords_unit=arcsec" title="Transient Name Server" target="_blank">TNS</a>
+        </li>
+
+        <li class="list-inline-item">
+          <a href="https://pc048b.fzu.cz/archive/images/cutouts?&site=cta-n&ccd=C0&ra={{ ra }}&dec={{ dec }}&sr=0.03" title="Get cutouts from CTA-N FRAM archive" target="_blank">Cutouts:CTA-N</a>
         </li>
 
         <!-- <li class="list-inline-item">
