@@ -22,7 +22,9 @@
   {% elif mode == 'image' %}
     <!-- Display image inline -->
 
-    <img src="{{ url_for('download', path=path) }}" class="img-fluid img-thumbnail" alt="{{ path }}"/>
+    <div class="text-center">
+      <img src="{{ url_for('download', path=path) }}" class="img-fluid img-thumbnail" alt="{{ path }}"/>
+    </div>
 
   {% elif mode == 'fits' %}
     <!-- Display FITS file -->
@@ -31,15 +33,15 @@
       <div>
         <!-- Full FITS header -->
         <div class="card">
-          <h5 class="card-header" data-toggle="collapse" data-target="#collapseHeader{{ loop.index0 }}"
+          <h5 class="card-header pt-2 pb-2" data-toggle="collapse" data-target="#collapseHeader{{ loop.index0 }}"
               aria-expanded="false"
               aria-controls="collapseHeader{{ loop.index0 }}">
             {{ hdu.name }}
-            <span class="float-right"><small><a href="#">Toggle header</a></small></span>
+            <span class="float-right"><i class="fa fa-list"></i> </span>
           </h5>
 
           <div class="collapse {% if hdu.data is none %}show{% endif %}" id="collapseHeader{{ loop.index0 }}">
-            <div class="card-body">
+            <div class="card-body pr-2 pl-2 pt-2 pb-2">
               <pre>{{ hdu.header.tostring('\n') }}</pre>
             </div>
           </div>
