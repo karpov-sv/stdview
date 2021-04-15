@@ -3,29 +3,33 @@
 {% block files_content %}
   <!-- Display list of files in current dir -->
 
-  <ul>
-    {% for file in files %}
-      <li>
-        <a href="{{ url_for('view', path=file.path) }}">
-          <i class="fa fa-{% if file.type == 'dir' %}folder-open-o{% elif file.type == 'text' %}file-text-o{% elif file.type == 'file' %}file-o{% else %}file-image-o{% endif %}"></i>
-          {{ file.name }}
-
-          {% if file.preview %}
-            <div class="text-center">
-              <img src="{{ url_for('preview', path=file.path) }}?width=512" class="img-fluid" alt="{{ path }}"/>
-            </div>
-          {% endif %}
-
-        </a>
-        {% if file.type == 'cutout' %}
+  {% if not files %}
+    Nothing to list
+  {% else %}
+    <ul>
+      {% for file in files %}
+        <li>
           <a href="{{ url_for('view', path=file.path) }}">
-          {% with path=file.path, cutout=none %}
-            {% include 'block_cutout.html' %}
-          {% endwith %}
+            <i class="fa fa-{% if file.type == 'dir' %}folder-open-o{% elif file.type == 'text' %}file-text-o{% elif file.type == 'file' %}file-o{% else %}file-image-o{% endif %}"></i>
+            {{ file.name }}
+
+            {% if file.preview %}
+              <div class="text-center">
+                <img src="{{ url_for('preview', path=file.path) }}?width=512" class="img-fluid stdview-image" data-stretch  alt="{{ path }}"/>
+              </div>
+            {% endif %}
+
           </a>
-        {% endif %}
-      </li>
-    {% endfor %}
-  </ul>
+          {% if file.type == 'cutout' %}
+            <a href="{{ url_for('view', path=file.path) }}">
+              {% with path=file.path, cutout=none, ra=file.ra, dec=file.dec %}
+                {% include 'block_cutout.html' %}
+              {% endwith %}
+            </a>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
 
 {% endblock %}

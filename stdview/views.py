@@ -94,6 +94,8 @@ def view(path=''):
                         hdus = fits.open(entry.path)
                         if hdus[0].data is None and hdus[1].name == 'IMAGE' and hdus[2].name == 'TEMPLATE':
                             elem['type'] = 'cutout'
+                            elem['ra'] = hdus[0].header.get('ra')
+                            elem['dec'] = hdus[0].header.get('dec')
                         elif hdus[0].data is not None:
                             elem['preview'] = True
                         hdus.close()
@@ -106,7 +108,7 @@ def view(path=''):
 
         return render_template('files_list.html', files=files, **context)
 
-    else:
+    elif os.path.isfile(fullpath):
         # Single file
 
         context['mime'] = magic.from_file(filename=fullpath, mime=True)
@@ -149,6 +151,9 @@ def view(path=''):
             context['mode'] = 'image'
 
         return render_template('files_view.html', **context)
+
+    else:
+        return render_template('files_list.html', **context)
 
 @app.route('/download/<path:path>/download', defaults={'attachment':True})
 @app.route('/download/<path:path>', defaults={'attachment':False})
@@ -218,15 +223,37 @@ def cutout(path, width=None):
     base = stdconf.get('basepath', '.')
     fullpath = os.path.join(base, path)
 
+    # GET parameters
+    fmt = request.args.get('format', 'jpeg')
+
+    qq = None
+    if 'qmin' in request.args or 'qmax' in request.args:
+        qq=[float(request.args.get('qmin', 0.5)), float(request.args.get('qmax', 99.5))]
+
+    opts = {
+        'cmap': request.args.get('cmap', 'Blues_r'),
+        'qq': qq,
+        'stretch': request.args.get('stretch', None),
+    }
+
+    if request.args.get('ra', None) is not None and request.args.get('dec', None) is not None:
+        # Show the position of the object
+        header = fits.getheader(fullpath, 1)
+        wcs = WCS(header)
+        x,y = wcs.all_world2pix(float(request.args.get('ra')), float(request.args.get('dec')), 0)
+        opts['mark_x'] = x
+        opts['mark_y'] = y
+
+    # Load the cutout
     cutout = cutouts.load_cutout(fullpath)
 
-    figsize = [256*4, 256+40]
+    figsize = [256*5, 256+40]
 
     fig = Figure(facecolor='white', dpi=72, figsize=(figsize[0]/72, figsize[1]/72), tight_layout=True)
 
-    plots.plot_cutout(cutout, fig=fig, planes=['image', 'template', 'convolved', 'diff', 'mask'], cmap='Blues_r')
+    plots.plot_cutout(cutout, fig=fig, planes=['image', 'template', 'convolved', 'diff', 'mask'], **opts)
 
     buf = io.BytesIO()
-    fig.savefig(buf, format="png")
+    fig.savefig(buf, format=fmt)
 
-    return Response(buf.getvalue(), mimetype='image/png')
+    return Response(buf.getvalue(), mimetype='image/%s' % fmt)

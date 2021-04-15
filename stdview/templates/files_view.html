@@ -45,17 +45,11 @@
           </div>
         </div>
 
-          {% if hdu.data is not none %}
-            <div class="text-center">
-              <div class="stdview-image-container">
-                <img id="hdu_img_{{ loop.index0 }}" src="{{ url_for('preview', path=path, ext=loop.index0) }}" class="img-fluid img-thumbnail" alt="{{ path }}"/>
-                {% with id='#hdu_img_%d' % loop.index0, ra=none, dec=none %}
-                  {% include "block_image_overlay.html" %}
-                {% endwith %}
-              </div>
-            </div>
-          {% endif %}
-
+        {% if hdu.data is not none %}
+          <div class="text-center">
+            <img src="{{ url_for('preview', path=path, ext=loop.index0) }}" class="img-fluid img-thumbnail stdview-image" data-stretch alt="{{ path }}"/>
+          </div>
+        {% endif %}
 
       </div>
     {% endfor %}
