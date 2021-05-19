@@ -127,7 +127,7 @@ def view(path=''):
             except:
                 pass
 
-        elif 'fits' in context['mime'] or os.path.splitext(path)[1].lower().startswith('.fit'):
+        elif 'fits' in context['mime'] or 'FITS' in context['magic_info'] or os.path.splitext(path)[1].lower().startswith('.fit'):
             context['mode'] = 'fits'
 
             try:

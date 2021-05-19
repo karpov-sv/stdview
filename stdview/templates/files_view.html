@@ -7,7 +7,7 @@
     <li>Path: <b><a href="{{ url_for('download', path=path, attachment=False) }}"><i class="fa fa-download"></i> {{ path }}</a></b></li>
     <li>Size: <b>{{ stat.st_size }}</b> bytes</li>
     <li>Last modified: <b>{{ time.iso }}</b></li>
-    <li><b>{{ mime }}</b> : {{ magic }}</li>
+    <li><b>{{ mime }}</b> : {{ magic_info }}</li>
   </ul>
 
   {% if mode == 'text' %}
