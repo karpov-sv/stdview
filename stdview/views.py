@@ -251,7 +251,7 @@ def cutout(path, width=None):
 
     fig = Figure(facecolor='white', dpi=72, figsize=(figsize[0]/72, figsize[1]/72), tight_layout=True)
 
-    plots.plot_cutout(cutout, fig=fig, planes=['image', 'template', 'convolved', 'diff', 'mask'], **opts)
+    plots.plot_cutout(cutout, fig=fig, planes=['image', 'template', 'convolved', 'diff', 'adjusted', 'footprint', 'mask'], **opts)
 
     buf = io.BytesIO()
     fig.savefig(buf, format=fmt)

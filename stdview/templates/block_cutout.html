@@ -20,6 +20,18 @@
     <li>CLASS_STAR: <b>{{ "%.2f" % cutout.meta.class_star }}</b></li>
     <li>FWHM: <b>{{ "%.2f" % cutout.meta.fwhm }}</b></li>
     <li>X/Y: <b>{{ "%.2f" % cutout.meta.x }}</b> <b>{{ "%.2f" % cutout.meta.y }}</b></li>
+
+    {% if cutout.meta.adjust_chi2_0 %}
+      <li>Adjustment:
+        <b>{{ "%.2f" % cutout.meta.adjust_dx }}</b>
+        <b>{{ "%.2f" % cutout.meta.adjust_dy }}</b>
+        scale <b>{{ "%.2f" % cutout.meta.adjust_scale }}</b>
+        chi2  <b>{{ "%.2f" % cutout.meta.adjust_chi2_0 }}</b> ->  <b>{{ "%.2f" % cutout.meta.adjust_chi2 }}</b>
+        df  <b>{{ "%d" % cutout.meta.adjust_df }}</b>
+        p-value <b>{{ "%.2g" % cutout.meta.adjust_pval }}</b>
+      </li>
+    {% endif %}
+
     <li>Original Image: <b>
       {% if cutout_filename %}
         <a href="https://pc048b.fzu.cz/archive/images?filename={{ cutout_filename }}" title="Look up original image in FRAM archive" target="_blank"><i class="fa fa-search"></i>
@@ -30,6 +42,29 @@
       {% endif %}
     </b></li>
   </ul>
+
+  <!-- Metadata -->
+  <div class="card mb-2">
+    <h5 class="card-header pt-2 pb-2" data-toggle="collapse" data-target="#collapseMeta"
+        aria-expanded="false"
+        aria-controls="collapseMeta">
+      Full Metadata
+      <span class="float-right"><i class="fa fa-list"></i> </span>
+    </h5>
+
+    <div class="collapse" id="collapseMeta">
+      <div class="card-body pr-0 pl-0 pt-0 pb-0">
+        <table class="table table-sm table-striped">
+          {% for m in cutout.meta %}
+            <tr>
+              <td>{{ m }}</td>
+              <td>{{ cutout.meta[m] }}</td>
+            </tr>
+          {% endfor %}
+        </table>
+      </div>
+    </div>
+  </div>
 
   <!-- Preview cutout image planes -->
   <div class="row">

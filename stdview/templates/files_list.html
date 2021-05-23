@@ -6,6 +6,9 @@
   {% if not files %}
     Nothing to list
   {% else %}
+    <p>
+      {{ files|length }} directory entries
+    </p>
     <ul>
       {% for file in files %}
         <li>
