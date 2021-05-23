@@ -18,6 +18,7 @@ $(document).ready(function() {
     	        stretch.append($('<option/>').html(svals[i]));
 
             stretch.on('change', function() {update_image_get_params(image, {stretch: this.value})});
+            stretch.on('click', function() {return false});
   	    overlay.append(stretch);
 
             /* Now scaling part */
@@ -30,6 +31,7 @@ $(document).ready(function() {
     	        scale.append($('<option/>').val(scvals[i]).html(scvals[i].toString()+'%'));
 
             scale.on('change', function() {update_image_get_params(image, {qmax: this.value})});
+            scale.on('click', function() {return false});
   	    overlay.append(scale);
         }
 

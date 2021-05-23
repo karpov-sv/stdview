@@ -17,6 +17,7 @@
     opacity: 0%;
     transition: .5s ease;
     white-space: nowrap;
+    z-order: 100;
 }
 
 .stdview-image-container:hover .stdview-image-overlay {
