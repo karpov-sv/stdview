@@ -183,6 +183,13 @@ def preview(path, ext=0, width=None, minwidth=256, maxwidth=1024):
     if width is not None:
         width = int(width)
 
+    if int(request.args.get('grid', 0)):
+        show_grid = True
+    else:
+        show_grid = False
+
+    zoom = float(request.args.get('zoom', 1))
+
     data = fits.getdata(fullpath, ext)
 
     figsize = [data.shape[1], data.shape[0]]
@@ -198,10 +205,19 @@ def preview(path, ext=0, width=None, minwidth=256, maxwidth=1024):
         figsize[0] = width
 
     fig = Figure(facecolor='white', dpi=72, figsize=(figsize[0]/72, figsize[1]/72))
-    ax = Axes(fig, [0., 0., 1., 1.])
-    # ax.set_axis_off()
+    if show_grid:
+        dx = 40/figsize[0]
+        dy = 20/figsize[1]
+        ax = Axes(fig, [dx, dy, 0.99 - dx, 0.99 - dy])
+        ax.grid(color='white', alpha=0.3)
+    else:
+        # No axes, just the image
+        ax = Axes(fig, [0., 0., 1., 1.])
+
     fig.add_axes(ax)
-    plots.imshow(data, ax=ax, show_axis=False, show_colorbar=False,
+    plots.imshow(data, ax=ax, show_axis=True if show_grid else False, show_colorbar=False,
+                 origin='lower',
+                 interpolation='nearest' if data.shape[1]/zoom < 0.5*width else 'bicubic',
                  cmap=request.args.get('cmap', 'Blues_r'),
                  stretch=request.args.get('stretch', 'linear'),
                  qq=[float(request.args.get('qmin', 0.5)), float(request.args.get('qmax', 99.5))])
@@ -213,8 +229,18 @@ def preview(path, ext=0, width=None, minwidth=256, maxwidth=1024):
         x,y = wcs.all_world2pix(float(request.args.get('ra')), float(request.args.get('dec')), 0)
         ax.add_artist(Circle((x, y), 5.0, edgecolor='red', facecolor='none', ls='-', lw=2))
 
+    if zoom > 1:
+        x0,width = data.shape[1]/2, data.shape[1]
+        y0,height = data.shape[0]/2, data.shape[0]
+
+        x0 += float(request.args.get('dx', 0)) * width/4
+        y0 += float(request.args.get('dy', 0)) * height/4
+
+        ax.set_xlim(x0 - 0.5*width/zoom, x0 + 0.5*width/zoom)
+        ax.set_ylim(y0 - 0.5*height/zoom, y0 + 0.5*height/zoom)
+
     buf = io.BytesIO()
-    fig.savefig(buf, format=fmt, quality=quality)
+    fig.savefig(buf, format=fmt, pil_kwargs={'quality':quality})
 
     return Response(buf.getvalue(), mimetype='image/%s' % fmt)
 

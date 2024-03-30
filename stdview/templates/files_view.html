@@ -49,7 +49,7 @@
 
         {% if hdu.data is not none %}
           <div class="text-center">
-            <img src="{{ url_for('preview', path=path, ext=loop.index0) }}" class="img-fluid img-thumbnail stdview-image" data-stretch alt="{{ path }}"/>
+            <img src="{{ url_for('preview', path=path, ext=loop.index0) }}" class="img-fluid img-thumbnail stdview-image" data-stretch data-zoom data-grid alt="{{ path }}"/>
           </div>
         {% endif %}
 
