@@ -166,6 +166,39 @@ def download(path, attachment=True):
     else:
         return "No such file"
 
+import cv2
+import numpy as np
+from matplotlib import colormaps
+def cv2_image_response(data, qq=[2.5, 99.75], cmap='Blues_r', quality=75, fmt='jpeg'):
+    limits = np.percentile(data[np.isfinite(data)], qq)
+
+    data = (data - limits[0]) / (limits[1] - limits[0])
+    data = np.clip(data, 0.0, 1.0)
+
+    cmap = colormaps[cmap]
+    data = cmap(data) # RGBA
+
+    data = (255 * data).astype(np.uint8)
+
+    # OpenCV expects BGRA
+    data = cv2.cvtColor(data, cv2.COLOR_RGBA2BGRA)
+
+    data = cv2.flip(data, 0)
+
+    success, buf = cv2.imencode(
+        ".jpg",
+        data,
+        [cv2.IMWRITE_JPEG_QUALITY, int(quality)]
+    )
+    if not success:
+        return Response(status=500)
+
+    return Response(
+        buf.tobytes(),
+        mimetype='image/%s' % fmt
+    )
+
+
 @app.route('/preview/<path:path>', defaults={'ext':0})
 @app.route('/preview/<path:path>/<int:ext>')
 def preview(path, ext=0, width=None, minwidth=256, maxwidth=1024):
@@ -203,6 +236,30 @@ def preview(path, ext=0, width=None, minwidth=256, maxwidth=1024):
     if width is not None and figsize[0] != width:
         figsize[1] = width*figsize[1]/figsize[0]
         figsize[0] = width
+
+    print(figsize)
+
+    # Optimization?
+    if not show_grid and request.args.get('stretch', 'linear') == 'linear':
+        if zoom > 1:
+            x0,width = data.shape[1]/2, data.shape[1]
+            y0,height = data.shape[0]/2, data.shape[0]
+
+            x0 += float(request.args.get('dx', 0)) * width/4
+            y0 += float(request.args.get('dy', 0)) * height/4
+
+            data = data[int(y0 - 0.5*height/zoom):int(y0 + 0.5*height/zoom), int(x0 - 0.5*width/zoom):int(x0 + 0.5*width/zoom)]
+
+        if figsize[0] != data.shape[1]:
+            # data = rescale(data, figsize[0]/data.shape[1], mode='reflect', anti_aliasing=True, preserve_range=True)
+            data = cv2.resize(data, [int(figsize[0]), int(figsize[1])], interpolation=cv2.INTER_AREA)
+
+        return cv2_image_response(
+            data,
+            qq=[float(request.args.get('qmin', 0.5)), float(request.args.get('qmax', 99.5))],
+            cmap=request.args.get('cmap', 'Blues_r'),
+            quality=int(request.args.get('quality', 75))
+        )
 
     fig = Figure(facecolor='white', dpi=72, figsize=(figsize[0]/72, figsize[1]/72))
     if show_grid:

@@ -42,7 +42,7 @@ overlay_stdview_images = function() {
         /* Zoom/pan */
         if ('zoom' in image.data()) {
   	    var zoom = $('<select/>');
-            var zvals = [1, 2, 4, 8, 16, 32];
+            var zvals = [1, 2, 4, 8, 16, 32, 64, 128];
 
             zoom.append($('<option disabled selected>').html('Zoom'));
 
