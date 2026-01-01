@@ -169,10 +169,34 @@ def download(path, attachment=True):
 import cv2
 import numpy as np
 from matplotlib import colormaps
-def cv2_image_response(data, qq=[2.5, 99.75], cmap='Blues_r', quality=75, fmt='jpeg'):
+from astropy.visualization import simple_norm, ImageNormalize
+from astropy.visualization.stretch import HistEqStretch
+
+def cv2_image_response(data, qq=[2.5, 99.75], cmap='Blues_r', quality=75, stretch='linear', fmt='jpeg'):
     limits = np.percentile(data[np.isfinite(data)], qq)
 
-    data = (data - limits[0]) / (limits[1] - limits[0])
+    if stretch == 'histeq':
+        norm = ImageNormalize(
+            stretch=HistEqStretch(data),
+            vmin=limits[0],
+            vmax=limits[1],
+        )
+    elif stretch != 'linear':
+        norm = simple_norm(
+            data,
+            stretch,
+            min_cut=limits[0],
+            max_cut=limits[1],
+            power=2,
+        )
+    else:
+        norm = None
+
+    if norm is None:
+        data = (data - limits[0]) / (limits[1] - limits[0])
+    else:
+        data = norm(data)
+
     data = np.clip(data, 0.0, 1.0)
 
     cmap = colormaps[cmap]
@@ -237,10 +261,8 @@ def preview(path, ext=0, width=None, minwidth=256, maxwidth=1024):
         figsize[1] = width*figsize[1]/figsize[0]
         figsize[0] = width
 
-    print(figsize)
-
     # Optimization?
-    if not show_grid and request.args.get('stretch', 'linear') == 'linear':
+    if not show_grid:
         if zoom > 1:
             x0,width = data.shape[1]/2, data.shape[1]
             y0,height = data.shape[0]/2, data.shape[0]
@@ -248,7 +270,11 @@ def preview(path, ext=0, width=None, minwidth=256, maxwidth=1024):
             x0 += float(request.args.get('dx', 0)) * width/4
             y0 += float(request.args.get('dy', 0)) * height/4
 
-            data = data[int(y0 - 0.5*height/zoom):int(y0 + 0.5*height/zoom), int(x0 - 0.5*width/zoom):int(x0 + 0.5*width/zoom)]
+            # TODO: pad with zeros instead?..
+            x1,x2 = max(0, int(x0 - 0.5*width/zoom)), min(int(x0 + 0.5*width/zoom), width)
+            y1,y2 = max(0, int(y0 - 0.5*height/zoom)), min(int(y0 + 0.5*height/zoom), height)
+
+            data = data[y1:y2, x1:x2]
 
         if figsize[0] != data.shape[1]:
             # data = rescale(data, figsize[0]/data.shape[1], mode='reflect', anti_aliasing=True, preserve_range=True)
@@ -258,8 +284,22 @@ def preview(path, ext=0, width=None, minwidth=256, maxwidth=1024):
             data,
             qq=[float(request.args.get('qmin', 0.5)), float(request.args.get('qmax', 99.5))],
             cmap=request.args.get('cmap', 'Blues_r'),
+            stretch=request.args.get('stretch', 'linear'),
             quality=int(request.args.get('quality', 75))
         )
+
+    if zoom > 1:
+        x0,dx0 = data.shape[1]/2, data.shape[1]
+        y0,dy0 = data.shape[0]/2, data.shape[0]
+
+        x0 += float(request.args.get('dx', 0)) * dx0/4
+        y0 += float(request.args.get('dy', 0)) * dy0/4
+
+        xlim = [x0 - 0.5*dx0/zoom, x0 + 0.5*dx0/zoom]
+        ylim = [y0 - 0.5*dy0/zoom, y0 + 0.5*dy0/zoom]
+    else:
+        xlim = [0, data.shape[1]]
+        ylim = [0, data.shape[0]]
 
     fig = Figure(facecolor='white', dpi=72, figsize=(figsize[0]/72, figsize[1]/72))
     if show_grid:
@@ -277,7 +317,9 @@ def preview(path, ext=0, width=None, minwidth=256, maxwidth=1024):
                  interpolation='nearest' if data.shape[1]/zoom < 0.5*width else 'bicubic',
                  cmap=request.args.get('cmap', 'Blues_r'),
                  stretch=request.args.get('stretch', 'linear'),
-                 qq=[float(request.args.get('qmin', 0.5)), float(request.args.get('qmax', 99.5))])
+                 qq=[float(request.args.get('qmin', 0.5)), float(request.args.get('qmax', 99.5))],
+                 fast=True, max_plot_size=1024, xlim=xlim, ylim=ylim,
+                 )
 
     if request.args.get('ra', None) is not None and request.args.get('dec', None) is not None:
         # Show the position of the object
@@ -286,15 +328,8 @@ def preview(path, ext=0, width=None, minwidth=256, maxwidth=1024):
         x,y = wcs.all_world2pix(float(request.args.get('ra')), float(request.args.get('dec')), 0)
         ax.add_artist(Circle((x, y), 5.0, edgecolor='red', facecolor='none', ls='-', lw=2))
 
-    if zoom > 1:
-        x0,width = data.shape[1]/2, data.shape[1]
-        y0,height = data.shape[0]/2, data.shape[0]
-
-        x0 += float(request.args.get('dx', 0)) * width/4
-        y0 += float(request.args.get('dy', 0)) * height/4
-
-        ax.set_xlim(x0 - 0.5*width/zoom, x0 + 0.5*width/zoom)
-        ax.set_ylim(y0 - 0.5*height/zoom, y0 + 0.5*height/zoom)
+    ax.set_xlim(*xlim)
+    ax.set_ylim(*ylim)
 
     buf = io.BytesIO()
     fig.savefig(buf, format=fmt, pil_kwargs={'quality':quality})
