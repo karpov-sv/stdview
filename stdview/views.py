@@ -272,11 +272,32 @@ def preview(path, ext=0, width=None, minwidth=256, maxwidth=1024):
             x0 += float(request.args.get('dx', 0)) * width/4
             y0 += float(request.args.get('dy', 0)) * height/4
 
-            # TODO: pad with zeros instead?..
-            x1,x2 = max(0, int(x0 - 0.5*width/zoom)), min(int(x0 + 0.5*width/zoom), width)
-            y1,y2 = max(0, int(y0 - 0.5*height/zoom)), min(int(y0 + 0.5*height/zoom), height)
+            half_width = 0.5 * width / zoom
+            half_height = 0.5 * height / zoom
 
-            data = data[y1:y2, x1:x2]
+            x1, x2 = int(x0 - half_width), int(x0 + half_width)
+            y1, y2 = int(y0 - half_height), int(y0 + half_height)
+
+            target_width = x2 - x1
+            target_height = y2 - y1
+
+            padded = np.zeros((target_height, target_width), dtype=np.double)
+
+            src_x1 = max(0, x1)
+            src_y1 = max(0, y1)
+            src_x2 = min(width, x2)
+            src_y2 = min(height, y2)
+
+            if src_x2 > src_x1 and src_y2 > src_y1:
+                dst_x1 = src_x1 - x1
+                dst_y1 = src_y1 - y1
+                dst_x2 = dst_x1 + (src_x2 - src_x1)
+                dst_y2 = dst_y1 + (src_y2 - src_y1)
+
+                padded += np.nanmedian(data[src_y1:src_y2, src_x1:src_x2])
+                padded[dst_y1:dst_y2, dst_x1:dst_x2] = data[src_y1:src_y2, src_x1:src_x2]
+
+            data = padded
 
         if figsize[0] != data.shape[1]:
             # data = rescale(data, figsize[0]/data.shape[1], mode='reflect', anti_aliasing=True, preserve_range=True)
