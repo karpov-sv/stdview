@@ -223,7 +223,7 @@ def cv2_image_response(data, qq=[2.5, 99.75], cmap='Blues_r', quality=75, stretc
     )
 
 
-@app.route('/preview/<path:path>', defaults={'ext':0})
+@app.route('/preview/<path:path>', defaults={'ext':-1})
 @app.route('/preview/<path:path>/<int:ext>')
 def preview(path, ext=0, width=None, minwidth=256, maxwidth=1024):
     """
@@ -248,6 +248,8 @@ def preview(path, ext=0, width=None, minwidth=256, maxwidth=1024):
     zoom = float(request.args.get('zoom', 1))
 
     data = fits.getdata(fullpath, ext)
+    if not np.issubdtype(data.dtype, np.integer):
+        data = data.astype(np.double)
 
     figsize = [data.shape[1], data.shape[0]]
 
