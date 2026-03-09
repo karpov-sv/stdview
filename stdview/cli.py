@@ -10,10 +10,7 @@ def main():
     parser.add_argument('-d', '--dir', dest='basepath', type=str, default='.', help='Directory to browse')
     parser.add_argument('-p', '--port', dest='port', type=int, default=5567, help='Port to use')
     parser.add_argument('-a', '--all', dest='show_all', action='store_true', help='Show all files')
-
-    parser.set_defaults(inline_previews=True)
-    parser.add_argument('--inline-previews', dest='inline_previews', action='store_true', help='Enable inline image previews in directory listings')
-    parser.add_argument('--no-inline-previews', dest='inline_previews', action='store_false', help='Disable inline image previews in directory listings')
+    parser.add_argument('-i', '--inline-previews', dest='inline_previews', action='store_true', help='Enable inline image previews in directory listings')
 
     parser.add_argument('--debug', dest='debug', action='store_true', help='Debug mode')
 
