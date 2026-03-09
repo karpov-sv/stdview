@@ -16,8 +16,8 @@
             <i class="fa fa-{% if file.type == 'dir' %}folder-open-o{% elif file.type == 'text' %}file-text-o{% elif file.type == 'file' %}file-o{% else %}file-image-o{% endif %}"></i>
             {{ file.name }}
 
-            {% if file.preview %}
-              <div class="text-center">
+            {% if inline_previews and file.preview %}
+              <div class="text-center stdview-inline-preview">
                 <img src="{{ url_for('preview', path=file.path) }}?width=512" class="img-fluid stdview-image" data-stretch  alt="{{ path }}"/>
               </div>
             {% endif %}
@@ -31,9 +31,9 @@
             </a>
           {% endif %}
 
-          {% if file.type == 'image' %}
+          {% if inline_previews and file.type == 'image' %}
             <a href="{{ url_for('view', path=file.path) }}">
-              <div class="text-center">
+              <div class="text-center stdview-inline-preview">
                 <img src="{{ url_for('preview', path=file.path) }}" class="img-fluid" alt="{{ file.path }}"/>
               </div>
             </a>

@@ -26,7 +26,19 @@
 
     <!-- jQuery to be run when document is loaded -->
     <script type="text/javascript">
-     $(document).ready(function(){});
+     $(document).ready(function() {
+       var toggle = $('#stdview-inline-previews-toggle');
+
+       if (!toggle.length)
+         return;
+
+       toggle.on('change', function() {
+         var newState = $(this).is(':checked');
+         var url = new URL(window.location.href);
+         url.searchParams.set('inline_previews', newState ? '1' : '0');
+         window.location.href = url.toString();
+       });
+     });
     </script>
 
     {% block head %}{% endblock %}
@@ -52,6 +64,15 @@
           </li>
           -->
 
+        </ul>
+        <ul class="navbar-nav ml-auto">
+          <li class="nav-item d-flex align-items-center ml-lg-2">
+            <div class="custom-control custom-switch">
+              <input type="checkbox" class="custom-control-input" id="stdview-inline-previews-toggle" {% if inline_previews %}checked{% endif %}>
+              <label class="custom-control-label text-light" for="stdview-inline-previews-toggle">Inline previews</label>
+            </div>
+          </li>
+          {% block navbar_items_right %} {% endblock %}
         </ul>
       </div>
     </nav>

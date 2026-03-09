@@ -1,6 +1,6 @@
 import os, glob, io
 
-from flask import request, render_template, redirect, url_for, flash, send_file, send_from_directory
+from flask import request, render_template, redirect, url_for, flash, send_file, send_from_directory, session
 from flask import Response
 
 import mimetypes
@@ -47,13 +47,27 @@ def make_breadcrumb(path, base='ROOT', lastlink=False):
 @app.route('/view/')
 @app.route('/view/<path:path>')
 def view(path=''):
+    inline_previews = stdconf.get('inline_previews', True)
+
+    if 'inline_previews' in session:
+        inline_previews = bool(session['inline_previews'])
+
+    if 'inline_previews' in request.args:
+        arg = request.args.get('inline_previews', '').strip().lower()
+        inline_previews = arg in ['1', 'true', 'yes', 'on']
+        session['inline_previews'] = inline_previews
+
     base = stdconf.get('basepath', '.')
     fullpath = os.path.join(base, path)
 
     contents = None
     files = None
 
-    context = {'path': path, 'breadcrumb': make_breadcrumb(path)}
+    context = {
+        'path': path,
+        'breadcrumb': make_breadcrumb(path),
+        'inline_previews': inline_previews,
+    }
 
     if os.path.isdir(fullpath):
         # List of files in the directory
