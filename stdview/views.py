@@ -1,4 +1,4 @@
-import os, glob, io
+import os, fnmatch, io
 
 from flask import request, render_template, redirect, url_for, flash, send_file, send_from_directory, session
 from flask import Response
@@ -48,6 +48,7 @@ def make_breadcrumb(path, base='ROOT', lastlink=False):
 @app.route('/view/<path:path>')
 def view(path=''):
     inline_previews = stdconf.get('inline_previews', True)
+    filename_mask = session.get('filename_mask', '')
 
     if 'inline_previews' in session:
         inline_previews = bool(session['inline_previews'])
@@ -56,6 +57,10 @@ def view(path=''):
         arg = request.args.get('inline_previews', '').strip().lower()
         inline_previews = arg in ['1', 'true', 'yes', 'on']
         session['inline_previews'] = inline_previews
+
+    if 'mask' in request.args:
+        filename_mask = request.args.get('mask', '').strip()
+        session['filename_mask'] = filename_mask
 
     base = stdconf.get('basepath', '.')
     fullpath = os.path.join(base, path)
@@ -67,6 +72,8 @@ def view(path=''):
         'path': path,
         'breadcrumb': make_breadcrumb(path),
         'inline_previews': inline_previews,
+        'filename_mask': filename_mask,
+        'filter_path': path if os.path.isdir(fullpath) else os.path.dirname(path),
     }
 
     if os.path.isdir(fullpath):
@@ -78,6 +85,9 @@ def view(path=''):
 
         for entry in os.scandir(fullpath):
             if entry.name[0] != '.' or stdconf.get('show_all'):
+                if filename_mask and not fnmatch.fnmatch(entry.name, filename_mask):
+                    continue
+
                 stat = entry.stat()
 
                 elem = {

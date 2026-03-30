@@ -2,6 +2,21 @@
     position: relative;
 }
 
+.stdview-navbar-filter {
+    margin-right: 0.5rem;
+}
+
+.stdview-navbar-filter .form-control {
+    min-width: 12rem;
+}
+
+.stdview-navbar-filter-clear {
+    font-size: 1rem;
+    line-height: 1;
+    padding-left: 0.55rem;
+    padding-right: 0.55rem;
+}
+
 .stdview-image-overlay {
     background: white;
     font-size: 0.8em;
@@ -40,4 +55,16 @@
     background: white;
     padding: 1em;
     border: 1px dotted red;
+}
+
+@media (max-width: 991.98px) {
+    .stdview-navbar-filter {
+        width: 100%;
+        margin-right: 0;
+        margin-bottom: 0.75rem;
+    }
+
+    .stdview-navbar-filter .input-group {
+        width: 100%;
+    }
 }

@@ -28,13 +28,41 @@
     <script type="text/javascript">
      $(document).ready(function() {
        var toggle = $('#stdview-inline-previews-toggle');
+       var maskInput = $('#stdview-filename-mask');
+       var clearMaskButton = $('#stdview-clear-filename-mask');
+
+       function syncClearMaskButton() {
+         if (!clearMaskButton.length || !maskInput.length)
+           return;
+
+         clearMaskButton.toggleClass('d-none', !maskInput.val().trim());
+       }
 
        if (!toggle.length)
          return;
 
+       syncClearMaskButton();
+
+       maskInput.on('input', function() {
+         syncClearMaskButton();
+       });
+
+       clearMaskButton.on('click', function(evt) {
+         var url = new URL(window.location.href);
+
+         evt.preventDefault();
+         maskInput.val('');
+         syncClearMaskButton();
+
+         url.searchParams.set('mask', '');
+         url.searchParams.set('inline_previews', toggle.is(':checked') ? '1' : '0');
+         window.location.href = url.toString();
+       });
+
        toggle.on('change', function() {
          var newState = $(this).is(':checked');
          var url = new URL(window.location.href);
+
          url.searchParams.set('inline_previews', newState ? '1' : '0');
          window.location.href = url.toString();
        });
@@ -66,6 +94,36 @@
 
         </ul>
         <ul class="navbar-nav ml-auto">
+          <li class="nav-item d-flex align-items-center mb-2 mb-lg-0">
+            <form class="form-inline stdview-navbar-filter" method="get" action="{{ url_for('view', path=filter_path) }}">
+              <input type="hidden" name="inline_previews" value="{{ 1 if inline_previews else 0 }}">
+              <div class="input-group input-group-sm">
+                <input
+                  type="text"
+                  class="form-control"
+                  id="stdview-filename-mask"
+                  name="mask"
+                  value="{{ filename_mask }}"
+                  placeholder="Filename mask"
+                  aria-label="Filename mask"
+                >
+                <div class="input-group-append">
+                  <button
+                    class="btn btn-outline-light stdview-navbar-filter-clear{% if not filename_mask %} d-none{% endif %}"
+                    id="stdview-clear-filename-mask"
+                    type="button"
+                    title="Clear filename filter"
+                    aria-label="Clear filename filter"
+                  >
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                  <button class="btn btn-outline-light" type="submit" title="Apply filename filter" aria-label="Apply filename filter">
+                    <i class="fa fa-filter"></i>
+                  </button>
+                </div>
+              </div>
+            </form>
+          </li>
           <li class="nav-item d-flex align-items-center ml-lg-2">
             <div class="custom-control custom-switch">
               <input type="checkbox" class="custom-control-input" id="stdview-inline-previews-toggle" {% if inline_previews %}checked{% endif %}>
